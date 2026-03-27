@@ -154,13 +154,10 @@ function showQuestion() {
 function updateProgress() {
     const total = currentQuestions.length;
     const current = currentIndex + 1;
-    const percent = Math.round((currentIndex / total) * 100);
 
     // Update using new IDs
-    const percEl = document.getElementById('progressPercent');
     const countEl = document.getElementById('questionCounter');
 
-    if (percEl) percEl.innerText = percent + "%";
     if (countEl) countEl.innerText = `${current}/${total}`;
     updatePerformanceMetrics();
 
@@ -258,7 +255,6 @@ document.getElementById('submitBtn').onclick = function () {
         if (currentIndex < currentQuestions.length) {
             showQuestion();
         } else {
-            document.getElementById('progressPercent').innerText = "100%";
             setTimeout(showResults, 200);
         }
         return;

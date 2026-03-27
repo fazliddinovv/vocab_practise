@@ -624,12 +624,6 @@ input[type="text"]::placeholder {
     border-color: rgba(14, 165, 233, 0.3);
 }
 
-#quizScreen #progressPercent {
-    color: #4338ca;
-    background: rgba(99, 102, 241, 0.12);
-    border-color: rgba(99, 102, 241, 0.28);
-}
-
 #quizScreen #questionCounter {
     color: #334155;
     background: rgba(148, 163, 184, 0.14);
@@ -1295,12 +1289,6 @@ input[type="text"]::placeholder {
     color: #075985;
     background: rgba(14, 165, 233, 0.14);
     border-color: rgba(14, 165, 233, 0.3);
-}
-
-#quizScreen #progressPercent {
-    color: #4338ca;
-    background: rgba(99, 102, 241, 0.12);
-    border-color: rgba(99, 102, 241, 0.28);
 }
 
 #quizScreen #questionCounter {
