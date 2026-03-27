@@ -9,6 +9,50 @@ let currentQuestions = [];
 let currentIndex = 0;
 let score = 0;
 let answerResults = [];
+const PAGE_SIZE = 1000;
+
+async function fetchAllUnitNumbers() {
+    let from = 0;
+    const allRows = [];
+
+    while (true) {
+        const { data, error } = await _supabase
+            .from('vocabulary')
+            .select('unit_number')
+            .range(from, from + PAGE_SIZE - 1);
+
+        if (error) return { data: null, error };
+        if (!data || data.length === 0) break;
+
+        allRows.push(...data);
+        if (data.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+    }
+
+    return { data: allRows, error: null };
+}
+
+async function fetchAllWordsByUnit(unitNum) {
+    let from = 0;
+    const allRows = [];
+
+    while (true) {
+        const { data, error } = await _supabase
+            .from('vocabulary')
+            .select('*')
+            .eq('unit_number', unitNum)
+            .range(from, from + PAGE_SIZE - 1);
+
+        if (error) return { data: null, error };
+        if (!data || data.length === 0) break;
+
+        allRows.push(...data);
+        if (data.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+    }
+
+    return { data: allRows, error: null };
+}
 
 // 2. Render units (Main screen)
 async function renderUnits() {
@@ -17,9 +61,7 @@ async function renderUnits() {
 
     grid.innerHTML = '<p class="loading-text" style="grid-column: 1/-1; text-align:center;">Loading...</p>';
 
-    const { data, error } = await _supabase
-        .from('vocabulary')
-        .select('unit_number');
+    const { data, error } = await fetchAllUnitNumbers();
 
     if (error) {
         grid.innerHTML = '<p class="loading-text" style="grid-column: 1/-1; text-align:center;">Failed to load units.</p>';
@@ -61,10 +103,7 @@ async function renderUnits() {
 // 3. Load data
 async function loadUnitData(unitNum) {
     showScreen('loadingScreen');
-    const { data, error } = await _supabase
-        .from('vocabulary')
-        .select('*')
-        .eq('unit_number', unitNum);
+    const { data, error } = await fetchAllWordsByUnit(unitNum);
 
     if (error || !data || data.length === 0) {
         alert("Error: No words were found in this unit!");
