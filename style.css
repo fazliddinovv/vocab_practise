@@ -1,4 +1,4 @@
-﻿/* --- RESET & BASICS --- */
+﻿﻿/* --- RESET & BASICS --- */
 * {
     margin: 0;
     padding: 0;
@@ -441,6 +441,7 @@ body {
     margin-bottom: 5px;
 }
 
+
 .quiz-definition {
     font-size: 24px;
     font-weight: 600;
@@ -801,7 +802,8 @@ body {
 #quizScreen .header-top {
     align-items: center;
     gap: 14px;
-}
+} 
+
 
 #quizPartTitle.app-badge.accent {
     margin-bottom: 0;
@@ -1086,7 +1088,8 @@ body {
     background-color: var(--border-color);
     border-radius: 10px;
     overflow: hidden;
-}
+} 
+
 
 .progress-bar {
     height: 100%;
@@ -1335,6 +1338,7 @@ input[type="text"]::placeholder {
     transition: width 0.35s ease;
 }
 
+
 #quizScreen .performance-fill.correct {
     background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
 }
@@ -1441,6 +1445,7 @@ input[type="text"]::placeholder {
     position: relative;
     z-index: 1;
 }
+
 
 #resultScreen .result-badge {
     margin-bottom: 14px;
@@ -1636,5 +1641,3 @@ input[type="text"]::placeholder {
         font-size: 16px;
     }
 }
-
-

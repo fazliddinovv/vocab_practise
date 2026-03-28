@@ -3,97 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IELTS Vocab Challenge Pro</title>
+    <title>Vocab Challenge</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-
     <div class="app-container">
-
         <div id="unitScreen" class="app-card">
             <div class="app-badge">Vocabulary Trainer</div>
             <h1 class="app-title">Select Unit</h1>
             <p class="app-subtitle">Which unit would you like to test your knowledge on?</p>
             <div class="unit-grid" id="unitGrid"></div>
         </div>
-
-        <div id="loadingScreen" class="app-card hidden center-content">
-            <div class="loading-spinner"></div>
-            <div class="loading-text">Loading data...</div>
-        </div>
-
-        <div id="quizScreen" class="app-card hidden">
-            <div class="quiz-header">
-                <div class="header-top">
-                    <div id="quizPartTitle" class="app-badge accent">Unit X</div>
-                    <div class="header-stats">
-                        <span id="correctCounter">Correct: 0</span>
-                        <span id="wrongCounter">Wrong: 0</span>
-                        <span id="accuracyCounter">Accuracy: 0%</span>
-                        <span id="questionCounter">0/0</span>
-                    </div>
-                </div>
-                <div class="steps-wrapper">
-                    <div class="progress-steps-container" id="stepsContainer"></div>
-                </div>
-                <div class="performance-strip">
-                    <div class="performance-track" id="performanceTrack">
-                        <div id="correctFill" class="performance-fill correct"></div>
-                        <div id="wrongFill" class="performance-fill wrong"></div>
-                    </div>
-                    <div class="performance-legend">
-                        <span><i class="legend-dot correct"></i>Correct</span>
-                        <span><i class="legend-dot wrong"></i>Wrong</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="quiz-content">
-                <p class="quiz-label">Definition:</p>
-                <p id="definitionText" class="quiz-definition"></p>
-                <div class="input-group">
-                    <input type="text" id="answerInput" placeholder="Write the word here..." autocomplete="off">
-                </div>
-                <div id="feedback" class="feedback-box hidden"></div>
-            </div>
-
-            <div class="quiz-footer">
-                <button class="btn btn-primary btn-full" id="submitBtn">Check</button>
-            </div>
-        </div>
-
-        <div id="resultScreen" class="app-card hidden center-content">
-            <div id="resultBadge" class="result-badge">Result</div>
-            <h1 class="app-title result-title">Lesson Completed</h1>
-            <p id="resultMessage" class="app-subtitle result-subtitle">Your result:</p>
-
-            <div class="result-score-wrap">
-                <div id="scoreText" class="final-score"></div>
-                <div id="scorePercent" class="result-percent">0%</div>
-            </div>
-
-            <div class="result-metrics">
-                <div class="metric-card correct">
-                    <span class="metric-label">Correct</span>
-                    <span id="resultCorrect" class="metric-value">0</span>
-                </div>
-                <div class="metric-card wrong">
-                    <span class="metric-label">Wrong</span>
-                    <span id="resultWrong" class="metric-value">0</span>
-                </div>
-                <div class="metric-card total">
-                    <span class="metric-label">Total</span>
-                    <span id="resultTotal" class="metric-value">0</span>
-                </div>
-            </div>
-
-            <button class="btn btn-secondary result-reset" onclick="location.reload()">Back to start</button>
-        </div>
-
     </div>
-
     <script src="./script.js"></script>
 </body>
 </html>

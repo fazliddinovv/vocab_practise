@@ -11,6 +11,12 @@ let score = 0;
 let answerResults = [];
 const PAGE_SIZE = 1000;
 
+function getSelectedUnitFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const unit = Number(params.get('unit'));
+    return Number.isFinite(unit) && unit > 0 ? unit : null;
+}
+
 async function fetchAllUnitNumbers() {
     let from = 0;
     const allRows = [];
@@ -94,7 +100,9 @@ async function renderUnits() {
         `;
 
         if (wordCount > 0) {
-            btn.onclick = () => loadUnitData(i);
+            btn.onclick = () => {
+                window.location.href = `quiz.html?unit=${i}`;
+            };
         }
         grid.appendChild(btn);
     }
@@ -107,7 +115,11 @@ async function loadUnitData(unitNum) {
 
     if (error || !data || data.length === 0) {
         alert("Error: No words were found in this unit!");
-        showScreen('unitScreen');
+        if (document.getElementById('unitScreen')) {
+            showScreen('unitScreen');
+        } else {
+            window.location.href = 'index.html';
+        }
         return;
     }
 
@@ -245,43 +257,46 @@ function renderInitialSteps(total) {
 }
 
 // 6. Check answer function
-document.getElementById('submitBtn').onclick = function () {
-    const input = document.getElementById('answerInput');
-    const feedback = document.getElementById('feedback');
-    const btn = this;
+const submitBtn = document.getElementById('submitBtn');
+if (submitBtn) {
+    submitBtn.onclick = function () {
+        const input = document.getElementById('answerInput');
+        const feedback = document.getElementById('feedback');
+        const btn = this;
 
-    if (btn.innerText === "Next" || btn.innerText === "View result") {
-        currentIndex++;
-        if (currentIndex < currentQuestions.length) {
-            showQuestion();
-        } else {
-            setTimeout(showResults, 200);
+        if (btn.innerText === "Next" || btn.innerText === "View result") {
+            currentIndex++;
+            if (currentIndex < currentQuestions.length) {
+                showQuestion();
+            } else {
+                setTimeout(showResults, 200);
+            }
+            return;
         }
-        return;
-    }
 
-    const userAns = input.value.trim().toLowerCase();
-    const correctAns = currentQuestions[currentIndex].word.toLowerCase();
+        const userAns = input.value.trim().toLowerCase();
+        const correctAns = currentQuestions[currentIndex].word.toLowerCase();
 
-    input.disabled = true;
-    feedback.classList.remove('hidden');
+        input.disabled = true;
+        feedback.classList.remove('hidden');
 
-    if (userAns === correctAns) {
-        score++;
-        answerResults[currentIndex] = true;
-        feedback.innerText = "Correct!";
-        feedback.className = "feedback-box correct";
-    } else {
-        answerResults[currentIndex] = false;
-        feedback.innerText = `Wrong! Answer: ${currentQuestions[currentIndex].word}`;
-        feedback.className = "feedback-box wrong";
-    }
+        if (userAns === correctAns) {
+            score++;
+            answerResults[currentIndex] = true;
+            feedback.innerText = "Correct!";
+            feedback.className = "feedback-box correct";
+        } else {
+            answerResults[currentIndex] = false;
+            feedback.innerText = `Wrong! Answer: ${currentQuestions[currentIndex].word}`;
+            feedback.className = "feedback-box wrong";
+        }
 
-    updatePerformanceMetrics();
-    renderSmartSteps(currentQuestions.length, currentIndex);
+        updatePerformanceMetrics();
+        renderSmartSteps(currentQuestions.length, currentIndex);
 
-    btn.innerText = (currentIndex + 1 < currentQuestions.length) ? "Next" : "View result";
-};
+        btn.innerText = (currentIndex + 1 < currentQuestions.length) ? "Next" : "View result";
+    };
+}
 
 // 7. Result and screens
 function showResults() {
@@ -332,18 +347,36 @@ function showResults() {
 
 function showScreen(screenId) {
     ['unitScreen', 'loadingScreen', 'quizScreen', 'resultScreen'].forEach(id => {
-        document.getElementById(id).classList.add('hidden');
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
     });
-    document.getElementById(screenId).classList.remove('hidden');
+    const target = document.getElementById(screenId);
+    if (target) target.classList.remove('hidden');
+}
+
+function initApp() {
+    const selectedUnit = getSelectedUnitFromUrl();
+    if (selectedUnit !== null) {
+        loadUnitData(selectedUnit);
+        return;
+    }
+
+    if (document.getElementById('unitGrid')) {
+        renderUnits();
+    }
 }
 
 // Initial load
-window.onload = renderUnits;
+window.onload = initApp;
 
 // Handle Enter key
-document.getElementById('answerInput').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-        document.getElementById('submitBtn').click();
-    }
-});
+const answerInput = document.getElementById('answerInput');
+if (answerInput) {
+    answerInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            const btn = document.getElementById('submitBtn');
+            if (btn) btn.click();
+        }
+    });
+}
 
