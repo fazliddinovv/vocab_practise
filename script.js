@@ -5,11 +5,49 @@ const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const { createClient } = supabase;
 const _supabase = createClient(SB_URL, SB_KEY);
 
+let unitParts = [];
+let currentPartIndex = 0;
+const PART_SIZE = 10; // har partda nechta savol
 let currentQuestions = [];
 let currentIndex = 0;
 let score = 0;
 let answerResults = [];
 const PAGE_SIZE = 1000;
+let selectedUnitNumber = null;
+
+function splitIntoParts(words, size) {
+    const parts = [];
+    for (let i = 0; i < words.length; i += size) {
+        parts.push(words.slice(i, i + size));
+    }
+    return parts;
+}
+
+function sortWordsInSequence(rows) {
+    const numericKeys = ['id', 'word_order', 'order_number', 'position'];
+    for (const key of numericKeys) {
+        const hasSortableKey = rows.every(row => row[key] !== undefined && row[key] !== null && Number.isFinite(Number(row[key])));
+        if (!hasSortableKey) continue;
+
+        return [...rows].sort((a, b) => Number(a[key]) - Number(b[key]));
+    }
+
+    const hasCreatedAt = rows.every(row => typeof row.created_at === 'string' && !Number.isNaN(Date.parse(row.created_at)));
+    if (hasCreatedAt) {
+        return [...rows].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    }
+
+    return rows;
+}
+
+function shuffleWords(rows) {
+    const shuffled = [...rows];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
 
 function getSelectedUnitFromUrl() {
     const params = new URLSearchParams(window.location.search);
@@ -101,7 +139,7 @@ async function renderUnits() {
 
         if (wordCount > 0) {
             btn.onclick = () => {
-                window.location.href = `quiz.html?unit=${i}`;
+                showQuizModeSelector(i);
             };
         }
         grid.appendChild(btn);
@@ -109,32 +147,91 @@ async function renderUnits() {
 }
 
 // 3. Load data
-async function loadUnitData(unitNum) {
+async function loadUnitData(unitNum, mode = 'part') {
     showScreen('loadingScreen');
+
     const { data, error } = await fetchAllWordsByUnit(unitNum);
 
     if (error || !data || data.length === 0) {
         alert("Error: No words were found in this unit!");
-        if (document.getElementById('unitScreen')) {
-            showScreen('unitScreen');
-        } else {
-            window.location.href = 'index.html';
-        }
         return;
     }
 
-    currentQuestions = data.sort(() => Math.random() - 0.5);
+    if (mode === 'random') {
+        startRandomQuiz(shuffleWords(data), unitNum);
+        return;
+    }
+
+    const orderedWords = sortWordsInSequence(data);
+
+    // Supabase'dagi ketma-ketlikka yaqin tartibni saqlab, 10 tadan partlarga bo'lamiz
+    unitParts = splitIntoParts(orderedWords, PART_SIZE);
+
+    // PART SELECTORGA O‘TAMIZ
+    showPartSelector(unitNum, data.length);
+}
+
+function showQuizModeSelector(unitNum) {
+    selectedUnitNumber = unitNum;
+    const subtitle = document.getElementById('modeSubtitle');
+    if (subtitle) subtitle.innerText = `How would you like to practice Unit ${unitNum}?`;
+    showScreen('modeScreen');
+}
+
+function startRandomQuiz(words, unitNum) {
+    currentPartIndex = 0;
+    currentQuestions = words;
     currentIndex = 0;
     score = 0;
     answerResults = [];
-    
+
     showScreen('quizScreen');
-    document.getElementById('quizPartTitle').innerText = `Unit ${unitNum}`;
-    
-    // CLEAR DOTS AND INITIAL RENDER
+    document.getElementById('quizPartTitle').innerText = `Unit ${unitNum} - Random`;
+
     const container = document.getElementById('stepsContainer');
-    container.innerHTML = ''; 
-    container.scrollLeft = 0; // Reset scroll to start
+    container.innerHTML = '';
+    container.scrollLeft = 0;
+
+    showQuestion();
+}
+
+function showPartSelector(unitNum, totalWords) {
+    showScreen('partScreen');
+
+    const subtitle = document.getElementById('partSubtitle');
+    if (subtitle) subtitle.innerText = `Unit ${unitNum} · ${totalWords} words total`;
+
+    const container = document.getElementById('partGrid');
+    container.innerHTML = '';
+
+    unitParts.forEach((part, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'part-btn';
+
+        btn.innerHTML = `
+            <span>Part ${index + 1}</span>
+            <span>${part.length} words</span>
+        `;
+
+        btn.onclick = () => startPart(index, unitNum);
+        container.appendChild(btn);
+    });
+}
+
+function startPart(partIndex, unitNum) {
+    currentPartIndex = partIndex;
+
+    currentQuestions = unitParts[partIndex];
+    currentIndex = 0;
+    score = 0;
+    answerResults = [];
+
+    showScreen('quizScreen');
+    document.getElementById('quizPartTitle').innerText = `Unit ${unitNum} - Part ${partIndex + 1}`;
+
+    const container = document.getElementById('stepsContainer');
+    container.innerHTML = '';
+    container.scrollLeft = 0;
 
     showQuestion();
 }
@@ -207,6 +304,7 @@ function updatePerformanceMetrics() {
 function renderSmartSteps(total, currentIdx) {
     const container = document.getElementById('stepsContainer');
     if (!container) return;
+    container.style.setProperty('--dot-count', String(Math.min(total, 10)));
 
     // 1. Create dots if they are not created yet
     if (container.children.length !== total) {
@@ -248,6 +346,7 @@ function renderSmartSteps(total, currentIdx) {
 function renderInitialSteps(total) {
     const container = document.getElementById('stepsContainer');
     if (!container) return;
+    container.style.setProperty('--dot-count', String(Math.min(total, 10)));
     container.innerHTML = '';
     for (let i = 0; i < total; i++) {
         const dot = document.createElement('div');
@@ -345,24 +444,74 @@ function showResults() {
     if (resultScreen) resultScreen.setAttribute('data-level', level);
 }
 
+function backToUnits() {
+    showScreen('unitScreen');
+    selectedUnitNumber = null;
+    unitParts = [];
+    currentQuestions = [];
+    currentIndex = 0;
+    score = 0;
+    answerResults = [];
+    window.history.replaceState({}, '', window.location.pathname);
+}
+
 function showScreen(screenId) {
-    ['unitScreen', 'loadingScreen', 'quizScreen', 'resultScreen'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
-    });
+    ['unitScreen', 'modeScreen', 'loadingScreen', 'quizScreen', 'resultScreen', 'partScreen']
+        .forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        });
+
     const target = document.getElementById(screenId);
     if (target) target.classList.remove('hidden');
 }
 
-function initApp() {
-    const selectedUnit = getSelectedUnitFromUrl();
-    if (selectedUnit !== null) {
-        loadUnitData(selectedUnit);
+async function initApp() {
+    const backBtn = document.getElementById('backToUnitsBtn');
+    if (backBtn) {
+        backBtn.onclick = backToUnits;
+    }
+
+    const quizBackBtn = document.getElementById('quizBackToUnitsBtn');
+    if (quizBackBtn) {
+        quizBackBtn.onclick = backToUnits;
+    }
+
+    const modePartBtn = document.getElementById('modePartBtn');
+    if (modePartBtn) {
+        modePartBtn.onclick = () => {
+            if (selectedUnitNumber === null) return;
+            loadUnitData(selectedUnitNumber, 'part');
+        };
+    }
+
+    const modeRandomBtn = document.getElementById('modeRandomBtn');
+    if (modeRandomBtn) {
+        modeRandomBtn.onclick = () => {
+            if (selectedUnitNumber === null) return;
+            loadUnitData(selectedUnitNumber, 'random');
+        };
+    }
+
+    const modeBackBtn = document.getElementById('modeBackBtn');
+    if (modeBackBtn) {
+        modeBackBtn.onclick = backToUnits;
+    }
+
+    // AGAR unitGrid BOR BO‘LSA → index.html
+    if (document.getElementById('unitGrid')) {
+        await renderUnits();
+        // SPA rejimda har doim bosh sahifadan boshlaymiz
+        window.history.replaceState({}, '', window.location.pathname);
         return;
     }
 
-    if (document.getElementById('unitGrid')) {
-        renderUnits();
+    // AGAR quizScreen BOR BO‘LSA → quiz.html
+    if (document.getElementById('quizScreen')) {
+        const selectedUnit = getSelectedUnitFromUrl();
+        if (selectedUnit !== null) {
+            loadUnitData(selectedUnit);
+        }
     }
 }
 
