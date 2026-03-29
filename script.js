@@ -14,6 +14,8 @@ let score = 0;
 let answerResults = [];
 const PAGE_SIZE = 1000;
 let selectedUnitNumber = null;
+let currentQuizMode = 'part';
+let currentUnitTotalWords = 0;
 
 function splitIntoParts(words, size) {
     const parts = [];
@@ -149,6 +151,8 @@ async function renderUnits() {
 // 3. Load data
 async function loadUnitData(unitNum, mode = 'part') {
     showScreen('loadingScreen');
+    selectedUnitNumber = unitNum;
+    currentQuizMode = mode;
 
     const { data, error } = await fetchAllWordsByUnit(unitNum);
 
@@ -156,6 +160,8 @@ async function loadUnitData(unitNum, mode = 'part') {
         alert("Error: No words were found in this unit!");
         return;
     }
+
+    currentUnitTotalWords = data.length;
 
     if (mode === 'random') {
         startRandomQuiz(shuffleWords(data), unitNum);
@@ -179,6 +185,7 @@ function showQuizModeSelector(unitNum) {
 }
 
 function startRandomQuiz(words, unitNum) {
+    currentQuizMode = 'random';
     currentPartIndex = 0;
     currentQuestions = words;
     currentIndex = 0;
@@ -187,10 +194,7 @@ function startRandomQuiz(words, unitNum) {
 
     showScreen('quizScreen');
     document.getElementById('quizPartTitle').innerText = `Unit ${unitNum} - Random`;
-
-    const container = document.getElementById('stepsContainer');
-    container.innerHTML = '';
-    container.scrollLeft = 0;
+    updateQuizHeaderControls();
 
     showQuestion();
 }
@@ -219,6 +223,7 @@ function showPartSelector(unitNum, totalWords) {
 }
 
 function startPart(partIndex, unitNum) {
+    currentQuizMode = 'part';
     currentPartIndex = partIndex;
 
     currentQuestions = unitParts[partIndex];
@@ -228,10 +233,7 @@ function startPart(partIndex, unitNum) {
 
     showScreen('quizScreen');
     document.getElementById('quizPartTitle').innerText = `Unit ${unitNum} - Part ${partIndex + 1}`;
-
-    const container = document.getElementById('stepsContainer');
-    container.innerHTML = '';
-    container.scrollLeft = 0;
+    updateQuizHeaderControls();
 
     showQuestion();
 }
@@ -259,6 +261,16 @@ function showQuestion() {
     }, 100);
 }
 
+function updateQuizHeaderControls() {
+    const countEl = document.getElementById('questionCounter');
+    const exitBtn = document.getElementById('quizExitBtn');
+    const topActions = document.querySelector('#quizScreen .quiz-top-actions');
+
+    if (countEl) countEl.classList.remove('hidden');
+    if (exitBtn) exitBtn.classList.remove('hidden');
+    if (topActions) topActions.classList.add('hidden');
+}
+
 // 5. UPDATE PROGRESS
 function updateProgress() {
     const total = currentQuestions.length;
@@ -269,8 +281,6 @@ function updateProgress() {
 
     if (countEl) countEl.innerText = `${current}/${total}`;
     updatePerformanceMetrics();
-
-    renderSmartSteps(total, currentIndex);
 }
 
 function updatePerformanceMetrics() {
@@ -298,60 +308,6 @@ function updatePerformanceMetrics() {
     if (wrongFill) wrongFill.style.width = `${wrongRatio}%`;
     if (track) {
         track.classList.toggle('is-empty', answered === 0 || total === 0);
-    }
-}
-
-function renderSmartSteps(total, currentIdx) {
-    const container = document.getElementById('stepsContainer');
-    if (!container) return;
-    container.style.setProperty('--dot-count', String(Math.min(total, 10)));
-
-    // 1. Create dots if they are not created yet
-    if (container.children.length !== total) {
-        container.innerHTML = '';
-        for (let i = 0; i < total; i++) {
-            const dot = document.createElement('div');
-            dot.className = 'step-dot';
-            container.appendChild(dot);
-        }
-    }
-
-    // 2. Update dot states (active/completed)
-    const dots = container.children;
-    for (let i = 0; i < total; i++) {
-        dots[i].className = 'step-dot';
-        if (answerResults[i] === true) dots[i].classList.add('answered-correct');
-        if (answerResults[i] === false) dots[i].classList.add('answered-wrong');
-        if (i < currentIdx) dots[i].classList.add('completed');
-        if (i === currentIdx) dots[i].classList.add('active');
-    }
-
-    // 3. KEEP ACTIVE DOT CENTERED
-    const activeDot = dots[currentIdx];
-    if (activeDot) {
-        // Calculate container center
-        const containerWidth = container.offsetWidth;
-        const dotLeft = activeDot.offsetLeft;
-        const dotWidth = activeDot.offsetWidth;
-
-        // Scroll so active dot stays centered
-        container.scrollTo({
-            left: dotLeft - (containerWidth / 2) + (dotWidth / 2),
-            behavior: 'smooth'
-        });
-    }
-}
-
-// Reset and recreate dots container
-function renderInitialSteps(total) {
-    const container = document.getElementById('stepsContainer');
-    if (!container) return;
-    container.style.setProperty('--dot-count', String(Math.min(total, 10)));
-    container.innerHTML = '';
-    for (let i = 0; i < total; i++) {
-        const dot = document.createElement('div');
-        dot.className = 'step-dot';
-        container.appendChild(dot);
     }
 }
 
@@ -391,7 +347,6 @@ if (submitBtn) {
         }
 
         updatePerformanceMetrics();
-        renderSmartSteps(currentQuestions.length, currentIndex);
 
         btn.innerText = (currentIndex + 1 < currentQuestions.length) ? "Next" : "View result";
     };
@@ -414,6 +369,7 @@ function showResults() {
     const badgeEl = document.getElementById('resultBadge');
     const msgEl = document.getElementById('resultMessage');
     const resultScreen = document.getElementById('resultScreen');
+    const backToPartsBtn = document.getElementById('backToPartsBtn');
 
     if (scoreEl) scoreEl.innerText = `${correct} / ${total}`;
     if (percentEl) percentEl.innerText = `${percent}%`;
@@ -442,17 +398,75 @@ function showResults() {
     if (badgeEl) badgeEl.innerText = badgeText;
     if (msgEl) msgEl.innerText = message;
     if (resultScreen) resultScreen.setAttribute('data-level', level);
+    if (backToPartsBtn) {
+        const shouldShowBackToParts = currentQuizMode === 'part';
+        backToPartsBtn.classList.toggle('hidden', !shouldShowBackToParts);
+    }
 }
 
 function backToUnits() {
     showScreen('unitScreen');
     selectedUnitNumber = null;
+    currentQuizMode = 'part';
+    currentUnitTotalWords = 0;
     unitParts = [];
     currentQuestions = [];
     currentIndex = 0;
     score = 0;
     answerResults = [];
     window.history.replaceState({}, '', window.location.pathname);
+}
+
+function backToParts() {
+    if (selectedUnitNumber === null || unitParts.length === 0) {
+        backToUnits();
+        return;
+    }
+
+    currentQuestions = [];
+    currentIndex = 0;
+    score = 0;
+    answerResults = [];
+
+    const totalWords = currentUnitTotalWords > 0
+        ? currentUnitTotalWords
+        : unitParts.reduce((sum, part) => sum + part.length, 0);
+
+    showPartSelector(selectedUnitNumber, totalWords);
+}
+
+function backFromPartScreen() {
+    if (selectedUnitNumber === null) {
+        backToUnits();
+        return;
+    }
+
+    showQuizModeSelector(selectedUnitNumber);
+}
+
+function openExitConfirmModal() {
+    const modal = document.getElementById('exitConfirmModal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+}
+
+function closeExitConfirmModal() {
+    const modal = document.getElementById('exitConfirmModal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+}
+
+function handleExitQuiz() {
+    openExitConfirmModal();
+}
+
+function confirmExitQuiz() {
+    closeExitConfirmModal();
+    backToUnits();
 }
 
 function showScreen(screenId) {
@@ -472,10 +486,46 @@ async function initApp() {
         backBtn.onclick = backToUnits;
     }
 
+    const backToPartsBtn = document.getElementById('backToPartsBtn');
+    if (backToPartsBtn) {
+        backToPartsBtn.onclick = backToParts;
+    }
+
     const quizBackBtn = document.getElementById('quizBackToUnitsBtn');
     if (quizBackBtn) {
         quizBackBtn.onclick = backToUnits;
     }
+
+    const quizExitBtn = document.getElementById('quizExitBtn');
+    if (quizExitBtn) {
+        quizExitBtn.onclick = handleExitQuiz;
+    }
+
+    const exitModalCancelBtn = document.getElementById('exitModalCancelBtn');
+    if (exitModalCancelBtn) {
+        exitModalCancelBtn.onclick = closeExitConfirmModal;
+    }
+
+    const exitModalConfirmBtn = document.getElementById('exitModalConfirmBtn');
+    if (exitModalConfirmBtn) {
+        exitModalConfirmBtn.onclick = confirmExitQuiz;
+    }
+
+    const exitConfirmModal = document.getElementById('exitConfirmModal');
+    if (exitConfirmModal) {
+        exitConfirmModal.addEventListener('click', function (event) {
+            if (event.target === exitConfirmModal) {
+                closeExitConfirmModal();
+            }
+        });
+    }
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key !== 'Escape') return;
+        const modal = document.getElementById('exitConfirmModal');
+        if (!modal || modal.classList.contains('hidden')) return;
+        closeExitConfirmModal();
+    });
 
     const modePartBtn = document.getElementById('modePartBtn');
     if (modePartBtn) {
@@ -498,6 +548,11 @@ async function initApp() {
         modeBackBtn.onclick = backToUnits;
     }
 
+    const partBackBtn = document.getElementById('partBackToUnitsBtn');
+    if (partBackBtn) {
+        partBackBtn.onclick = backFromPartScreen;
+    }
+
     // AGAR unitGrid BOR BO‘LSA → index.html
     if (document.getElementById('unitGrid')) {
         await renderUnits();
@@ -518,14 +573,20 @@ async function initApp() {
 // Initial load
 window.onload = initApp;
 
-// Handle Enter key
-const answerInput = document.getElementById('answerInput');
-if (answerInput) {
-    answerInput.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            const btn = document.getElementById('submitBtn');
-            if (btn) btn.click();
-        }
-    });
-}
+// Handle Enter key across quiz flow (Check/Next/View result)
+document.addEventListener('keydown', function (event) {
+    if (event.key !== 'Enter' || event.repeat) return;
+
+    const modal = document.getElementById('exitConfirmModal');
+    if (modal && !modal.classList.contains('hidden')) return;
+
+    const quizScreen = document.getElementById('quizScreen');
+    if (!quizScreen || quizScreen.classList.contains('hidden')) return;
+
+    const submitBtn = document.getElementById('submitBtn');
+    if (!submitBtn || submitBtn.disabled) return;
+
+    event.preventDefault();
+    submitBtn.click();
+});
 

@@ -24,7 +24,10 @@
 
         <!-- MODE SCREEN -->
         <div id="modeScreen" class="app-card hidden">
-            <div class="app-badge">Quiz Mode</div>
+            <div class="mode-top-actions">
+                <div class="app-badge">Quiz Mode</div>
+                <button id="modeBackBtn" class="btn btn-secondary mode-back-btn">Back to units</button>
+            </div>
             <h1 class="app-title">Choose Quiz Type</h1>
             <p id="modeSubtitle" class="app-subtitle">How would you like to practice this unit?</p>
 
@@ -32,12 +35,13 @@
                 <button id="modePartBtn" class="part-btn">Part by Order</button>
                 <button id="modeRandomBtn" class="part-btn">Random Quiz</button>
             </div>
-
-            <button id="modeBackBtn" class="btn btn-secondary mode-back-btn">Back to units</button>
         </div>
 
         <!-- PART SCREEN -->
         <div id="partScreen" class="app-card hidden">
+            <div class="part-top-actions">
+                <button id="partBackToUnitsBtn" class="btn btn-secondary part-back-btn" type="button">Back</button>
+            </div>
             <div class="app-badge">Select Part</div>
             <h1 class="app-title">Choose Part</h1>
             <p id="partSubtitle" class="app-subtitle"><i>Unit details will appear here.</i></p>
@@ -55,18 +59,16 @@
             <div class="quiz-header">
                 <div class="header-top">
                     <div id="quizPartTitle" class="app-badge accent">Unit X</div>
-                    <div class="header-stats">
-                        <span id="correctCounter">Correct: 0</span>
-                        <span id="wrongCounter">Wrong: 0</span>
-                        <span id="accuracyCounter">Accuracy: 0%</span>
-                        <span id="questionCounter">0/0</span>
-                    </div>
+                </div>
+                <div class="header-stats">
+                    <span id="correctCounter">Correct: 0</span>
+                    <span id="wrongCounter">Wrong: 0</span>
+                    <span id="accuracyCounter">Accuracy: 0%</span>
+                    <span id="questionCounter">0/0</span>
+                    <button id="quizExitBtn" class="btn quiz-exit-btn hidden" type="button">Exit</button>
                 </div>
                 <div class="quiz-top-actions">
                     <button id="quizBackToUnitsBtn" class="btn btn-secondary quiz-back-btn" type="button">Back to units</button>
-                </div>
-                <div class="steps-wrapper">
-                    <div class="progress-steps-container" id="stepsContainer"></div>
                 </div>
                 <div class="performance-strip">
                     <div class="performance-track" id="performanceTrack">
@@ -120,7 +122,21 @@
                 </div>
             </div>
 
-            <button class="btn btn-secondary result-reset" id="backToUnitsBtn">Back to units</button>
+            <div class="result-actions">
+                <button class="btn btn-secondary result-reset hidden" id="backToPartsBtn">Back to parts</button>
+                <button class="btn btn-secondary result-reset" id="backToUnitsBtn">Back to units</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="exitConfirmModal" class="modal-overlay hidden" aria-hidden="true">
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="exitModalTitle">
+            <h2 id="exitModalTitle" class="modal-title">Are you sure you want to exit?</h2>
+            <p class="modal-subtitle">Your progress in this part will be lost.</p>
+            <div class="modal-actions">
+                <button id="exitModalCancelBtn" class="btn btn-secondary modal-cancel-btn" type="button">Cancel</button>
+                <button id="exitModalConfirmBtn" class="btn modal-confirm-btn" type="button">Exit</button>
+            </div>
         </div>
     </div>
 

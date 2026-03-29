@@ -353,16 +353,6 @@ body {
     }
 }
 
-/* --- QUIZ SCREEN: Layout & Components --- */
-.quiz-header {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    /* Vertical spacing between elements */
-    padding-bottom: 20px;
-    border-bottom: 1px solid #f1f5f9;
-    margin-bottom: 25px;
-}
 
 .header-top {
     display: flex;
@@ -675,14 +665,28 @@ input[type="text"]::placeholder {
     border-color: rgba(148, 163, 184, 0.3);
 }
 
-#quizScreen .progress-steps-container {
-    width: min(340px, 100%);
+#quizScreen .quiz-exit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    border: 1px solid rgba(220, 38, 38, 0.35);
+    background: rgba(239, 68, 68, 0.14);
+    color: #991b1b;
+    line-height: 1.2;
 }
 
-#quizScreen .performance-strip {
-    margin-top: 8px;
-    display: grid;
-    gap: 8px;
+#quizScreen .quiz-exit-btn:hover {
+    background: rgba(239, 68, 68, 0.22);
+    border-color: rgba(185, 28, 28, 0.45);
+}
+
+#quizScreen .progress-steps-container {
+    width: min(340px, 100%);
 }
 
 #quizScreen .performance-track {
@@ -1064,6 +1068,7 @@ body {
     #quizScreen .quiz-header {
         padding: 14px 12px;
         border-radius: 16px;
+        text-align: center;
     }
 
     #quizScreen .header-top {
@@ -1359,6 +1364,7 @@ input[type="text"]::placeholder {
 #quizScreen .performance-strip {
     margin-top: 8px;
     display: grid;
+    justify-content: center;
     gap: 8px;
 }
 
@@ -1491,9 +1497,16 @@ input[type="text"]::placeholder {
 #resultScreen .result-subtitle,
 #resultScreen .result-score-wrap,
 #resultScreen .result-metrics,
+#resultScreen .result-actions,
 #resultScreen .result-reset {
     position: relative;
     z-index: 1;
+}
+
+#resultScreen .result-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
 
@@ -1667,6 +1680,13 @@ input[type="text"]::placeholder {
         border-radius: 22px;
     }
 
+    #resultScreen .result-actions {
+        display: flex;
+        width: 175px;
+        justify-content: center;
+        gap: 12px;
+    }
+
     #resultScreen .result-subtitle {
         font-size: 15px;
         margin-bottom: 14px;
@@ -1788,6 +1808,17 @@ input[type="text"]::placeholder {
     margin-top: 8px;
 }
 
+#modeScreen .mode-top-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+#modeScreen .mode-top-actions .app-badge {
+    margin-bottom: 0;
+}
+
 #modeScreen .part-btn {
     position: relative;
     background: #ffffff;
@@ -1820,21 +1851,46 @@ input[type="text"]::placeholder {
 }
 
 #modeScreen .mode-back-btn {
-    display: block;
-    margin: 18px auto 0;
-    min-width: 190px;
+    margin: 0;
+    min-width: 142px;
+    padding: 8px 12px;
+    font-size: 12px;
+    border-radius: 999px;
     text-align: center;
 }
 
 @media (max-width: 640px) {
+    body {
+        overflow-x: hidden;
+        overflow-x: clip;
+    }
+
+    #modeScreen {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    #modeScreen .mode-top-actions {
+        min-width: 0;
+        gap: 8px;
+    }
+
+    #modeScreen .mode-back-btn {
+        min-width: 0;
+        padding: 6px 10px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
     #modeScreen .part-grid {
         grid-template-columns: 1fr;
     }
 
     #modeScreen .part-btn {
-        min-height: 74px;
-        font-size: 20px;
-        border-radius: 18px;
+        min-height: 58px;
+        padding: 12px 12px;
+        font-size: 17px;
+        border-radius: 16px;
     }
 }
 
@@ -1842,6 +1898,32 @@ input[type="text"]::placeholder {
     margin-bottom: 16px;
     color: #475569;
     font-weight: 600;
+}
+
+#partScreen {
+    position: relative;
+}
+
+#partScreen .part-top-actions {
+    position: absolute;
+    right: 50px;
+    z-index: 2;
+}
+
+#partScreen .part-back-btn {
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    background: rgba(255, 255, 255, 0.85);
+    color: #334155;
+    box-shadow: none;
+}
+
+#partScreen .part-back-btn:hover {
+    background: rgba(241, 245, 249, 0.95);
+    border-color: rgba(100, 116, 139, 0.5);
 }
 
 #partScreen .part-grid {
@@ -1890,6 +1972,16 @@ input[type="text"]::placeholder {
 }
 
 @media (max-width: 640px) {
+    #partScreen .part-top-actions {
+        top: 12px;
+        right: 12px;
+    }
+
+    #partScreen .part-back-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
     #partScreen .part-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
@@ -1958,5 +2050,166 @@ input[type="text"]::placeholder {
 }
 
 #quizScreen .performance-strip {
-    gap: 6px;
+    grid-column: 1 / -1;
+    width: 150px;
+    justify-self: center;
+    text-align: center;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+}
+
+.modal-card {
+    width: min(92vw, 420px);
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    background: #ffffff;
+    box-shadow: 0 24px 50px -24px rgba(2, 6, 23, 0.5);
+    padding: 22px 20px 18px;
+}
+
+.modal-title {
+    font-size: 24px;
+    line-height: 1.2;
+    color: #0f172a;
+    margin: 0 0 8px;
+    letter-spacing: -0.5px;
+}
+
+.modal-subtitle {
+    margin: 0;
+    font-size: 15px;
+    color: #475569;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.modal-cancel-btn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+.modal-confirm-btn {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(220, 38, 38, 0.5);
+    background: #dc2626;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.modal-confirm-btn:hover {
+    background: #b91c1c;
+    border-color: rgba(185, 28, 28, 0.7);
+}
+
+@media (max-width: 640px) {
+    #quizScreen .quiz-header {
+        position: relative;
+        padding-top: 30px;
+        display: grid;
+    }
+
+    #quizScreen .header-top {
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    #quizScreen #quizPartTitle {
+        margin-right: auto;
+    }
+
+    #quizScreen .header-stats {
+        display: flex;
+        width: fit-content !important;
+        max-width: 100%;
+        justify-content: center !important;
+        margin: 0 auto !important;
+    }
+
+    #quizScreen .quiz-exit-btn {
+        position: absolute;
+        top: 35px;
+        right: 25px;
+        z-index: 3;
+        padding: 5px 10px;
+        font-size: 10px;
+    }
+}
+
+@media (min-width: 641px) {
+    #quizScreen .quiz-header {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        column-gap: 12px;
+        row-gap: 8px;
+        align-items: center;
+    }
+
+    #quizScreen .header-top {
+        grid-column: 1;
+    }
+
+    #quizScreen .header-stats {
+        margin-top: 0;
+    }
+
+    .stats-track {
+        margin-left: 25px;
+    }
+}
+
+/* Mobile overflow-safe final layer */
+@media (max-width: 640px) {
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        overflow-x: clip;
+    }
+
+    .app-container {
+        width: min(100%, 420px);
+        max-width: 420px;
+    }
+
+    .app-card,
+    #unitScreen,
+    #modeScreen,
+    #partScreen,
+    #loadingScreen,
+    #quizScreen,
+    #resultScreen {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        overflow-x: clip;
+    }
+
+    #modeScreen .mode-top-actions {
+        width: 100%;
+    }
 }
