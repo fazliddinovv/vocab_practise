@@ -466,7 +466,7 @@ function handleExitQuiz() {
 
 function confirmExitQuiz() {
     closeExitConfirmModal();
-    backToUnits();
+    backToParts();
 }
 
 function showScreen(screenId) {
